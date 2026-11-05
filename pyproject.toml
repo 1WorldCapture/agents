@@ -30,6 +30,7 @@ livekit-plugins-cartesia = { workspace = true }
 livekit-plugins-cerebras = { workspace = true }
 livekit-plugins-clova = { workspace = true }
 livekit-plugins-deepgram = { workspace = true }
+livekit-plugins-doubao = { workspace = true }
 livekit-plugins-elevenlabs = { workspace = true }
 livekit-plugins-fal = { workspace = true }
 livekit-plugins-fireworksai = { workspace = true }
@@ -90,6 +91,7 @@ livekit-plugins-typesafe = { workspace = true }
 livekit-plugins-ultravox = { workspace = true }
 livekit-plugins-upliftai = { workspace = true }
 livekit-plugins-vakyam = { workspace = true }
+livekit-plugins-weixin = { workspace = true }
 livekit-plugins-gradium = { workspace = true }
 livekit-plugins-xai = { workspace = true }
 livekit-plugins-phonic = { workspace = true }
