@@ -50,6 +50,7 @@ members = [
     "livekit-plugins-deepgram",
     "livekit-plugins-did",
     "livekit-plugins-doubao",
+    "livekit-plugins-edgetts",
     "livekit-plugins-elevenlabs",
     "livekit-plugins-fal",
     "livekit-plugins-fireworksai",
@@ -1124,6 +1125,21 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/10/ef/07791a05751e6cc9de1dd49fb12730259ee109b18e6d097e25e6c32d5617/duckduckgo_search-8.1.1.tar.gz", hash = "sha256:9da91c9eb26a17e016ea1da26235d40404b46b0565ea86d75a9f78cc9441f935", size = 22868, upload-time = "2025-07-06T15:30:59.73Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/db/72/c027b3b488b1010cf71670032fcf7e681d44b81829d484bb04e31a949a8d/duckduckgo_search-8.1.1-py3-none-any.whl", hash = "sha256:f48adbb06626ee05918f7e0cef3a45639e9939805c4fc179e68c48a12f1b5062", size = 18932, upload-time = "2025-07-06T15:30:58.339Z" },
+]
+
+[[package]]
+name = "edge-tts"
+version = "7.3.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "aiohttp" },
+    { name = "certifi" },
+    { name = "tabulate" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a3/ce/14e713ba774063e00444a091eb790539fe0d848a9d8df35fd81a7639a28e/edge_tts-7.3.1.tar.gz", hash = "sha256:ee1fabf911b9ea83b38ae93aee5619ee41eaf0b109fef6e65d797dc4ebf1f20f", size = 35843, upload-time = "2026-10-13T18:22:53.226Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/35/86/3b97d755992777d5a9ca0e45a8ec96cc9858b2d6dd8f65f3f688d60e8709/edge_tts-7.3.1-py3-none-any.whl", hash = "sha256:2a3c79d6235a7a736d681233823ce5492e829b43eb47beae49aa181237a8f9a4", size = 38908, upload-time = "2026-10-13T18:22:51.772Z" },
 ]
 
 [[package]]
@@ -2217,6 +2233,9 @@ did = [
 doubao = [
     { name = "livekit-plugins-doubao" },
 ]
+edgetts = [
+    { name = "livekit-plugins-edgetts" },
+]
 elevenlabs = [
     { name = "livekit-plugins-elevenlabs" },
 ]
@@ -2444,6 +2463,7 @@ requires-dist = [
     { name = "livekit-plugins-deepgram", marker = "extra == 'deepgram'", editable = "livekit-plugins/livekit-plugins-deepgram" },
     { name = "livekit-plugins-did", marker = "extra == 'did'", editable = "livekit-plugins/livekit-plugins-did" },
     { name = "livekit-plugins-doubao", marker = "extra == 'doubao'", editable = "livekit-plugins/livekit-plugins-doubao" },
+    { name = "livekit-plugins-edgetts", marker = "extra == 'edgetts'", editable = "livekit-plugins/livekit-plugins-edgetts" },
     { name = "livekit-plugins-elevenlabs", marker = "extra == 'elevenlabs'", editable = "livekit-plugins/livekit-plugins-elevenlabs" },
     { name = "livekit-plugins-fal", marker = "extra == 'fal'", editable = "livekit-plugins/livekit-plugins-fal" },
     { name = "livekit-plugins-fireworksai", marker = "extra == 'fireworksai'", editable = "livekit-plugins/livekit-plugins-fireworksai" },
@@ -2528,7 +2548,7 @@ requires-dist = [
     { name = "typing-extensions", specifier = ">=4.12" },
     { name = "watchfiles", specifier = ">=1.0" },
 ]
-provides-extras = ["anam", "anthropic", "assemblyai", "asyncai", "avatario", "avatartalk", "aws", "azure", "baseten", "bey", "bithuman", "bland", "boson-avatar", "browser", "cambai", "cartesia", "cerebras", "clova", "codecs", "deepgram", "did", "doubao", "elevenlabs", "fal", "fireworksai", "fishaudio", "gladia", "gnani", "google", "gradium", "groq", "hamming", "hume", "images", "inworld", "kalpa", "keyframe", "langchain", "lemonslice", "liveavatar", "lmnt", "mcp", "meta", "microsoft-ai", "minimax", "mistralai", "murf", "nabrah", "neuphonic", "nltk", "nvidia", "openai", "palabra", "perplexity", "phonic", "protoface", "resemble", "reson8", "respeecher", "rime", "rtzr", "runway", "sarvam", "silero", "simli", "simplismart", "slng", "smallestai", "soniox", "spatius", "speechify", "speechmatics", "spitch", "synthesia", "tavus", "thunderphone", "trugen", "turn-detector", "typesafe", "ultravox", "upliftai", "vakyam", "weixin", "xai", "zoom-ai"]
+provides-extras = ["anam", "anthropic", "assemblyai", "asyncai", "avatario", "avatartalk", "aws", "azure", "baseten", "bey", "bithuman", "bland", "boson-avatar", "browser", "cambai", "cartesia", "cerebras", "clova", "codecs", "deepgram", "did", "doubao", "edgetts", "elevenlabs", "fal", "fireworksai", "fishaudio", "gladia", "gnani", "google", "gradium", "groq", "hamming", "hume", "images", "inworld", "kalpa", "keyframe", "langchain", "lemonslice", "liveavatar", "lmnt", "mcp", "meta", "microsoft-ai", "minimax", "mistralai", "murf", "nabrah", "neuphonic", "nltk", "nvidia", "openai", "palabra", "perplexity", "phonic", "protoface", "resemble", "reson8", "respeecher", "rime", "rtzr", "runway", "sarvam", "silero", "simli", "simplismart", "slng", "smallestai", "soniox", "spatius", "speechify", "speechmatics", "spitch", "synthesia", "tavus", "thunderphone", "trugen", "turn-detector", "typesafe", "ultravox", "upliftai", "vakyam", "weixin", "xai", "zoom-ai"]
 
 [[package]]
 name = "livekit-api"
@@ -3148,6 +3168,20 @@ requires-dist = [
     { name = "av", specifier = ">=14.0.0" },
     { name = "livekit-agents", extras = ["codecs"], editable = "livekit-agents" },
     { name = "numpy", specifier = ">=1.26.0" },
+]
+
+[[package]]
+name = "livekit-plugins-edgetts"
+source = { editable = "livekit-plugins/livekit-plugins-edgetts" }
+dependencies = [
+    { name = "edge-tts" },
+    { name = "livekit-agents", extra = ["codecs"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "edge-tts", specifier = ">=7.3.1,<8" },
+    { name = "livekit-agents", extras = ["codecs"], editable = "livekit-agents" },
 ]
 
 [[package]]
@@ -6504,6 +6538,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/eb/e3/7c1dc7381d9f8ab7d854328ebfa884e62cb3f3d8549ddfd37c7814f42afa/starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0", size = 2703240, upload-time = "2026-06-12T09:23:11.602Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/bb/2799cc2ede3ed41131f8975621e7213dfc7ef4acbbaadfa440f32500c370/starlette-1.3.1-py3-none-any.whl", hash = "sha256:c7372aae11c3c3f26a42df7bd626cec2f47d03483d261d369516a615a53714c6", size = 73632, upload-time = "2026-06-12T09:23:10.017Z" },
+]
+
+[[package]]
+name = "tabulate"
+version = "0.10.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/46/58/8c37dea7bbf769b20d58e7ace7e5edfe65b849442b00ffcdd56be88697c6/tabulate-0.10.0.tar.gz", hash = "sha256:e2cfde8f79420f6deeffdeda9aaec3b6bc5abce947655d17ac662b126e48a60d", size = 91754, upload-time = "2026-03-04T18:55:34.402Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/55/db07de81b5c630da5cbf5c7df646580ca26dfaefa593667fc6f2fe016d2e/tabulate-0.10.0-py3-none-any.whl", hash = "sha256:f0b0622e567335c8fabaaa659f1b33bcb6ddfe2e496071b743aa113f8774f2d3", size = 39814, upload-time = "2026-03-04T18:55:31.284Z" },
 ]
 
 [[package]]
