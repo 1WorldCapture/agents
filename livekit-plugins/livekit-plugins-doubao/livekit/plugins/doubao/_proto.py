@@ -168,7 +168,9 @@ class Transcript:
             if not isinstance(text, str) or not text:
                 return []
             final, end_of_speech = _final_flags(item)
-            if final and text == self._last_cumulative_final:
+            # After a final, the server repeats the same text, sometimes marked interim, until
+            # the next utterance starts; treating it as new speech would send the turn twice.
+            if text == self._last_cumulative_final:
                 return []
             if final:
                 self._last_cumulative_final = text

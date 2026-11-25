@@ -275,6 +275,8 @@ def test_cumulative_duplicate_final_is_suppressed() -> None:
     raw = '{"results":[{"text":"hello","extra":{"nonstream_result":true}}]}'
     assert len(transcript.update(raw)) == 1
     assert transcript.update(raw) == []
+    assert transcript.update('{"results":[{"text":"hello","is_interim":true}]}') == []
+    assert transcript.finish() == []
     assert len(transcript.update('{"results":[{"text":""}],"extra":{"vad_start":true}}')) == 0
     assert len(transcript.update(raw)) == 1
 
