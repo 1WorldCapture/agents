@@ -145,6 +145,7 @@ class Transcript:
         self._current = ""
         self._next_index = 0
         self._last_cumulative_final: str | None = None
+        self._last_final_text = ""
         self.has_text = False
 
     def update(self, raw_result: str) -> list[TranscriptUpdate]:
@@ -172,8 +173,18 @@ class Transcript:
             # the next utterance starts; treating it as new speech would send the turn twice.
             if text == self._last_cumulative_final:
                 return []
+            # The text covers the whole session, so later utterances start with the earlier
+            # ones; report only the words after the last final.
+            # A final equal to the last one after vad_start is the same words said again.
+            session_text = text
+            prefix = self._last_final_text
+            if prefix and text.startswith(prefix) and not (final and text == prefix):
+                text = text[len(prefix) :].lstrip()
+                if not text:
+                    return []
             if final:
-                self._last_cumulative_final = text
+                self._last_cumulative_final = session_text
+                self._last_final_text = session_text
             self._current = "" if final else text
             self.has_text = True
             return [TranscriptUpdate(text, final, end_of_speech)]

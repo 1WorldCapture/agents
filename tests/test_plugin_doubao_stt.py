@@ -281,6 +281,42 @@ def test_cumulative_duplicate_final_is_suppressed() -> None:
     assert len(transcript.update(raw)) == 1
 
 
+def test_cumulative_session_text_reports_only_new_utterance() -> None:
+    def result(text: str, final: bool = False, vad_start: bool = False) -> str:
+        item: dict[str, object] = {"text": text}
+        if final:
+            item["extra"] = {"nonstream_result": True}
+        else:
+            item["is_interim"] = True
+        return json.dumps({"results": [item], "extra": {"vad_start": vad_start}})
+
+    transcript = Transcript()
+    steps = [
+        result("你好。", final=True),
+        result("你好。", vad_start=True),
+        result("你好。明白"),
+        result("你好。明白了。", final=True),
+        result("你好。明白了。你怎么", vad_start=True),
+        result("你好。明白了。你怎么还在思考？", final=True),
+        # the server started a new session text
+        result("那 Kokoro 呢？", final=True),
+        result("那 Kokoro 呢？ Is it small?", final=True),
+    ]
+    updates = [(u.text, u.final) for step in steps for u in transcript.update(step)]
+    assert updates == [
+        ("你好。", True),
+        ("明白", False),
+        ("明白了。", True),
+        ("你怎么", False),
+        ("你怎么还在思考？", True),
+        ("那 Kokoro 呢？", True),
+        ("Is it small?", True),
+    ]
+
+    transcript.update(result("那 Kokoro 呢？ Is it small? 好的"))
+    assert [(u.text, u.final) for u in transcript.finish()] == [("好的", True)]
+
+
 def test_response_parses_signed_status() -> None:
     response = Response.parse(_response("SessionFailed", status=(1 << 64) - 1))
     assert response.status == -1
