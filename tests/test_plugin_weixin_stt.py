@@ -49,6 +49,7 @@ class _FakeWeixinServer:
         self.voice_payloads: list[bytes] = []
         self.voice_sequences: list[int] = []
         self.voice_totals: list[int] = []
+        self.voice_ids: list[str] = []
 
     async def handle(self, request: web.Request) -> web.WebSocketResponse:
         assert "wxws_pb" in request.headers.get("Sec-WebSocket-Protocol", "")
@@ -110,6 +111,7 @@ class _FakeWeixinServer:
             self.voice_payloads.append(payload)
         self.voice_sequences.append(sequence)
         self.voice_totals.append(inner.varint(11, 0) or 0)
+        self.voice_ids.append(inner.string(2) or "")
 
         text = ""
         polished = ""
@@ -273,6 +275,48 @@ async def test_streaming_protocol_identity_cache_and_recognize(tmp_path: Path) -
         )
         assert result.alternatives[0].text == "你好，世界。"
         assert server.need_uin == [True, False]
+        await provider.aclose()
+    finally:
+        await runner.cleanup()
+
+
+async def test_flush_finalizes_each_utterance_of_a_live_stream(tmp_path: Path) -> None:
+    server = _FakeWeixinServer()
+    runner, url = await _start_server(server)
+    try:
+        provider = STT(base_url=url, identity_cache_path=tmp_path / "identity.json")
+        assert provider.capabilities.manual_flush
+        stream = provider.stream(conn_options=APIConnectOptions(max_retry=0))
+        stream.push_frame(_audio_frame())
+        stream.flush()
+        stream.flush()  # a flush without new audio finalizes nothing
+        stream.push_frame(_audio_frame())
+        stream.flush()
+        events: list[stt.SpeechEvent] = []
+        async for event in stream:
+            events.append(event)
+            if sum(e.type is stt.SpeechEventType.END_OF_SPEECH for e in events) == 2:
+                break
+        await stream.aclose()
+
+        speech = [
+            (event.type, event.alternatives[0].text if event.alternatives else "")
+            for event in events
+            if event.type
+            in (stt.SpeechEventType.FINAL_TRANSCRIPT, stt.SpeechEventType.END_OF_SPEECH)
+        ]
+        assert (
+            speech
+            == [
+                (stt.SpeechEventType.FINAL_TRANSCRIPT, "你好，世界。"),
+                (stt.SpeechEventType.END_OF_SPEECH, ""),
+            ]
+            * 2
+        )
+        assert server.voice_sequences == [1, 2, 0, 1, 2, 0]
+        first, second = server.voice_ids[0], server.voice_ids[3]
+        assert server.voice_ids == [first] * 3 + [second] * 3 and first != second
+        assert server.voice_payloads[2].startswith(b"#!OPUS_RAW_V1")
         await provider.aclose()
     finally:
         await runner.cleanup()

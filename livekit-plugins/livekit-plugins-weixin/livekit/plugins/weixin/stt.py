@@ -97,6 +97,9 @@ class STT(stt.STT):
                 streaming=True,
                 interim_results=interim_results,
                 offline_recognize=True,
+                # The server never ends an utterance by itself; a flush (from VAD end of speech
+                # or a manual turn commit) finalizes it.
+                manual_flush=True,
             )
         )
         self._opts = _STTOptions(language=language, interim_results=interim_results)
@@ -225,11 +228,22 @@ class SpeechStream(stt.SpeechStream):
         except Exception as error:
             raise APIConnectionError("Weixin STT handshake failed") from error
 
+        # One voice id is one utterance. A flush or the end of input finalizes it, and the next
+        # audio starts a new one, so a live stream yields a final transcript per utterance.
         latest_text = ""
         polished_text = ""
         packets: list[bytes] = []
         sequence = 0
         total_bytes = 0
+        received = False  # audio arrived since the last utterance was finalized
+
+        def start_utterance() -> None:
+            nonlocal latest_text, polished_text, packets, sequence, total_bytes, received
+            self._request_id = uuid.uuid4().hex
+            latest_text = polished_text = ""
+            packets = []
+            sequence = total_bytes = 0
+            received = False
 
         def handle_result(result: VoiceResult) -> None:
             nonlocal latest_text, polished_text
@@ -257,24 +271,8 @@ class SpeechStream(stt.SpeechStream):
             )
             handle_result(result)
 
-        try:
-            encoder = _OpusEncoder()
-            chunker = utils.audio.AudioByteStream(
-                sample_rate=SAMPLE_RATE,
-                num_channels=NUM_CHANNELS,
-                samples_per_channel=SAMPLES_PER_FRAME,
-            )
-            async for data in self._input_ch:
-                if isinstance(data, self._FlushSentinel):
-                    continue
-                self._input_consumed = True
-                mono = _to_mono(data)
-                self._report_usage(mono.duration)
-                for frame in chunker.push(mono.data.tobytes()):
-                    packets.extend(encoder.encode(frame))
-                    if len(packets) >= PACKETS_PER_REQUEST:
-                        await upload(packets, is_end=False)
-                        packets = []
+        async def finish_utterance() -> None:
+            nonlocal packets
             for frame in chunker.flush():
                 packets.extend(encoder.encode(_pad_frame(frame, SAMPLES_PER_FRAME)))
             while len(packets) > PACKETS_PER_REQUEST:
@@ -295,6 +293,35 @@ class SpeechStream(stt.SpeechStream):
                 )
                 handle_result(result)
             self._emit_final(polished_text or latest_text)
+            start_utterance()
+
+        try:
+            encoder = _OpusEncoder()
+            chunker = utils.audio.AudioByteStream(
+                sample_rate=SAMPLE_RATE,
+                num_channels=NUM_CHANNELS,
+                samples_per_channel=SAMPLES_PER_FRAME,
+            )
+            start_utterance()
+            async for data in self._input_ch:
+                if isinstance(data, self._FlushSentinel):
+                    # Less than one encoded frame (such as a resampler tail) waits for the next
+                    # utterance instead of being finalized on its own.
+                    if sequence > 0 or packets:
+                        await finish_utterance()
+                    continue
+                self._input_consumed = True
+                received = True
+                mono = _to_mono(data)
+                self._report_usage(mono.duration)
+                for frame in chunker.push(mono.data.tobytes()):
+                    packets.extend(encoder.encode(frame))
+                    if len(packets) >= PACKETS_PER_REQUEST:
+                        await upload(packets, is_end=False)
+                        packets = []
+            # end_input() flushes first, so this finalizes only audio that came after that flush.
+            if received:
+                await finish_utterance()
         except (APIConnectionError, APIStatusError, APITimeoutError) as error:
             if self._input_consumed:
                 error.retryable = False
